@@ -33,5 +33,21 @@ void jsonltp_close(){
 }
 
 int jsonltp(char* line, char* result, int flag){
-	
+	cJSON* jRoot = cJSON_CreateObject();
+
+	//Segment
+	vector<string> words;
+	int len = segmentor_segment(cws, (const string)line, words);
+
+	cJSON* jWords = cJSON_CreateArray();
+	for (i = 0; i < src.size() - 1; i++) {
+		cJSON_AddStringToArray(jWords, src[i].c_str());
+	}
+	cJSON_AddItemToObject(jRoot, "ws", jWords);
+
+	char* jRootStr = cJSON_Print(jRoot);
+	cJSON_Delete(jRoot);
+
+	strcpy(result, jRootStr)
+	free(jRootStr)
 }
