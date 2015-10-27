@@ -1,6 +1,6 @@
 #include "lowltp.h"
 
-int lowltp_recognize(char* words, char* postags, char* tags){
+int lowltp_recognize(char* words, char* postags, char* nes){
 	vector<string> ws;
 	lowltp_tostrs(ws, words);
 
@@ -10,5 +10,5 @@ int lowltp_recognize(char* words, char* postags, char* tags){
 	vector<string> ts;
 	ner_recognize(ner, ws, pts, ts);
 
-	return lowltp_tocstr(tags, ts);
+	return lowltp_tocstr(nes, ts);
 }
