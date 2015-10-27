@@ -5,6 +5,7 @@
 #include "ltp/postag_dll.h"
 #include "ltp/ner_dll.h"
 #include "ltp/parser_dll.h"
+#include "ltp/SRL_DLL.h"
 #include "../inc/lowltp.h"
 
 using namespace std;

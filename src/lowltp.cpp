@@ -11,6 +11,7 @@ void lowltp_init(char* dataDir){
 	pos = postagger_create_postagger((const char*)((string)dataDir + (string)"/pos.model").c_str());
 	ner = ner_create_recognizer((const char*)((string)dataDir + (string)"/ner.model").c_str());
 	parser = parser_create_parser((const char*)((string)dataDir + (string)"/parser.model").c_str());
+	SRL_LoadResource((string)dataDir + (string)"/srl/");
 }
 
 void lowltp_close(){
@@ -18,4 +19,5 @@ void lowltp_close(){
 	postagger_release_postagger(pos);
 	ner_release_recognizer(ner);
 	parser_release_parser(parser);
+	SRL_ReleaseResource();
 }
