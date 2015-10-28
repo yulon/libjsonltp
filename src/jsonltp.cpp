@@ -45,6 +45,17 @@ int jsonltp(char* line, char* result, int flag){
 	}
 	cJSON_AddItemToObject(jRoot, "ws", jWords);
 
+	//Postag
+	if (flag & JSONLTP_FLAG_POS) {
+		vector<string> postags;
+		postagger_postag(pos, words, postags);
+		cJSON* jPostags = cJSON_CreateArray();
+		for (int i = 0; i < postags.size(); i++) {
+			cJSON_AddItemToArray(jPostags, cJSON_CreateString(postags[i].c_str()));
+		}
+		cJSON_AddItemToObject(jRoot, "pos", jPostags);
+	}
+
 	char* jRootStr = cJSON_Print(jRoot);
 	cJSON_Delete(jRoot);
 	int jRootStrLen = strlen(jRootStr);
