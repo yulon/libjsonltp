@@ -32,37 +32,33 @@ void jsonltp_close(){
 	SRL_ReleaseResource();
 }
 
+cJSON* strs_to_jary(vector<string> &strs){
+	cJSON* jAry = cJSON_CreateArray();
+	for (int i = 0; i < strs.size(); i++) {
+		cJSON_AddItemToArray(jAry, cJSON_CreateString(strs[i].c_str()));
+	}
+	return jAry;
+}
+
 int jsonltp(char* line, char* result, int flag){
 	cJSON* jRoot = cJSON_CreateObject();
 
 	//Segment
 	vector<string> words;
 	int len = segmentor_segment(cws, (const string)line, words);
-	cJSON* jWords = cJSON_CreateArray();
-	for (int i = 0; i < words.size(); i++) {
-		cJSON_AddItemToArray(jWords, cJSON_CreateString(words[i].c_str()));
-	}
-	cJSON_AddItemToObject(jRoot, "ws", jWords);
+	cJSON_AddItemToObject(jRoot, "ws", strs_to_jary(words));
 
 	//Postag
 	if (flag & JSONLTP_FLAG_POS) {
 		vector<string> postags;
 		postagger_postag(pos, words, postags);
-		cJSON* jPostags = cJSON_CreateArray();
-		for (int i = 0; i < postags.size(); i++) {
-			cJSON_AddItemToArray(jPostags, cJSON_CreateString(postags[i].c_str()));
-		}
-		cJSON_AddItemToObject(jRoot, "pos", jPostags);
+		cJSON_AddItemToObject(jRoot, "pos", strs_to_jary(postags));
 
 		//Named entity recognize
 		if (flag & JSONLTP_FLAG_NER) {
 			vector<string> nes;
 			ner_recognize(ner, words, postags, nes);
-			cJSON* jNes = cJSON_CreateArray();
-			for (int i = 0; i < nes.size(); i++) {
-				cJSON_AddItemToArray(jNes, cJSON_CreateString(nes[i].c_str()));
-			}
-			cJSON_AddItemToObject(jRoot, "nes", jNes);
+			cJSON_AddItemToObject(jRoot, "nes", strs_to_jary(nes));
 		}
 	}
 
