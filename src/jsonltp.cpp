@@ -38,7 +38,6 @@ int jsonltp(char* line, char* result, int flag){
 	//Segment
 	vector<string> words;
 	int len = segmentor_segment(cws, (const string)line, words);
-
 	cJSON* jWords = cJSON_CreateArray();
 	for (int i = 0; i < words.size(); i++) {
 		cJSON_AddItemToArray(jWords, cJSON_CreateString(words[i].c_str()));
@@ -54,6 +53,17 @@ int jsonltp(char* line, char* result, int flag){
 			cJSON_AddItemToArray(jPostags, cJSON_CreateString(postags[i].c_str()));
 		}
 		cJSON_AddItemToObject(jRoot, "pos", jPostags);
+
+		//Named entity recognize
+		if (flag & JSONLTP_FLAG_NER) {
+			vector<string> nes;
+			ner_recognize(ner, words, postags, nes);
+			cJSON* jNes = cJSON_CreateArray();
+			for (int i = 0; i < nes.size(); i++) {
+				cJSON_AddItemToArray(jNes, cJSON_CreateString(nes[i].c_str()));
+			}
+			cJSON_AddItemToObject(jRoot, "nes", jNes);
+		}
 	}
 
 	char* jRootStr = cJSON_Print(jRoot);
