@@ -40,14 +40,15 @@ int jsonltp(char* line, char* result, int flag){
 	int len = segmentor_segment(cws, (const string)line, words);
 
 	cJSON* jWords = cJSON_CreateArray();
-	for (i = 0; i < src.size() - 1; i++) {
-		cJSON_AddStringToArray(jWords, src[i].c_str());
+	for (int i = 0; i < words.size(); i++) {
+		cJSON_AddItemToArray(jWords, cJSON_CreateString(words[i].c_str()));
 	}
 	cJSON_AddItemToObject(jRoot, "ws", jWords);
 
 	char* jRootStr = cJSON_Print(jRoot);
 	cJSON_Delete(jRoot);
-
-	strcpy(result, jRootStr)
-	free(jRootStr)
+	int jRootStrLen = strlen(jRootStr);
+	strcpy(result, jRootStr);
+	free(jRootStr);
+	return jRootStrLen;
 }
