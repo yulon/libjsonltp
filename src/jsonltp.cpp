@@ -70,7 +70,7 @@ int jsonltp(char* line, char* result, int flag){
 		parser_parse(par, words, postags, heads, deprels);
 		cJSON* jParses = cJSON_CreateArray();
 		for (int i = 0; i < heads.size(); i++) {
-			parse.push_back(make_pair(heads[i], deprels[i]));
+			parse.push_back(make_pair(heads[i] - 1, deprels[i]));
 
 			cJSON* jParse = cJSON_CreateObject();
 			cJSON_AddNumberToObject(jParse, "heads", heads[i]);
@@ -83,7 +83,7 @@ int jsonltp(char* line, char* result, int flag){
 	//SRL
 	if (flag & JSONLTP_FLAG_SRL) {
 		vector< pair< int, vector< pair<string, pair< int, int > > > > > srl;
-		DoSRL(words, postags, nes, parse, srl);//srl is null?
+		DoSRL(words, postags, nes, parse, srl);
 		cJSON* jSRL = cJSON_CreateArray();
 		for (int i = 0; i < srl.size(); i++) {
 			cJSON* jPredicate = cJSON_CreateObject();
