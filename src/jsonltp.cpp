@@ -46,19 +46,34 @@ int jsonltp(char* line, char* result, int flag){
 	//Segment
 	vector<string> words;
 	int len = segmentor_segment(cws, (const string)line, words);
-	cJSON_AddItemToObject(jRoot, "ws", strs_to_jary(words));
+	cJSON_AddItemToObject(jRoot, "words", strs_to_jary(words));
 
 	//Postag
 	if (flag & JSONLTP_FLAG_POS) {
 		vector<string> postags;
 		postagger_postag(pos, words, postags);
-		cJSON_AddItemToObject(jRoot, "pos", strs_to_jary(postags));
+		cJSON_AddItemToObject(jRoot, "postags", strs_to_jary(postags));
 
 		//Named entity recognize
 		if (flag & JSONLTP_FLAG_NER) {
 			vector<string> nes;
 			ner_recognize(ner, words, postags, nes);
 			cJSON_AddItemToObject(jRoot, "nes", strs_to_jary(nes));
+		}
+
+		//Parse
+		if (flag & JSONLTP_FLAG_DP) {
+			vector<int> heads;
+			vector<string> deprels;
+			parser_parse(par, words, postags, heads, deprels);
+			cJSON* jParses = cJSON_CreateArray();
+			for (int i = 0; i < heads.size(); i++) {
+				cJSON* jParse = cJSON_CreateObject();
+				cJSON_AddNumberToObject(jParse, "heads", heads[i]);
+				cJSON_AddStringToObject(jParse, "deprels", deprels[i].c_str());
+				cJSON_AddItemToArray(jParses, jParse);
+			}
+			cJSON_AddItemToObject(jRoot, "parse", jParses);
 		}
 	}
 
