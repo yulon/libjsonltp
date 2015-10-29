@@ -50,9 +50,9 @@ int jsonltp(char* line, char* result, int flag){
 
 	//Postag
 	vector<string> postags;
-	if (flag & JSONLTP_FLAG_POS) {
+	if (flag & JSONLTP_FLAG_TAG) {
 		postagger_postag(pos, words, postags);
-		cJSON_AddItemToObject(jRoot, "postags", strs_to_jary(postags));
+		cJSON_AddItemToObject(jRoot, "tags", strs_to_jary(postags));
 	}
 
 	//NER
@@ -70,11 +70,11 @@ int jsonltp(char* line, char* result, int flag){
 		parser_parse(par, words, postags, heads, deprels);
 		cJSON* jParses = cJSON_CreateArray();
 		for (int i = 0; i < heads.size(); i++) {
-			parse.push_back(make_pair(heads[i] - 1, deprels[i]));
+			parse.push_back(make_pair(--heads[i], deprels[i]));
 
 			cJSON* jParse = cJSON_CreateObject();
-			cJSON_AddNumberToObject(jParse, "heads", heads[i]);
-			cJSON_AddStringToObject(jParse, "deprels", deprels[i].c_str());
+			cJSON_AddNumberToObject(jParse, "parent", heads[i]);
+			cJSON_AddStringToObject(jParse, "deprel", deprels[i].c_str());
 			cJSON_AddItemToArray(jParses, jParse);
 		}
 		cJSON_AddItemToObject(jRoot, "parse", jParses);
@@ -86,8 +86,8 @@ int jsonltp(char* line, char* result, int flag){
 		DoSRL(words, postags, nes, parse, srl);
 		cJSON* jSRL = cJSON_CreateArray();
 		for (int i = 0; i < srl.size(); i++) {
-			cJSON* jPredicate = cJSON_CreateObject();
-			cJSON_AddNumberToObject(jPredicate, "i", srl[i].first);
+			cJSON* jPred = cJSON_CreateObject();
+			cJSON_AddNumberToObject(jPred, "i", srl[i].first);
 
 			cJSON* jArgs = cJSON_CreateArray();
 			for (int j = 0; j < srl[i].second.size(); ++j)
@@ -98,9 +98,9 @@ int jsonltp(char* line, char* result, int flag){
 				cJSON_AddNumberToObject(jArg, "end", srl[i].second[j].second.second);
 				cJSON_AddItemToArray(jArgs, jArg);
 			}
-			cJSON_AddItemToObject(jPredicate, "srl", jArgs);
+			cJSON_AddItemToObject(jPred, "args", jArgs);
 
-			cJSON_AddItemToArray(jSRL, jPredicate);
+			cJSON_AddItemToArray(jSRL, jPred);
 		}
 		cJSON_AddItemToObject(jRoot, "srl", jSRL);
 	}
