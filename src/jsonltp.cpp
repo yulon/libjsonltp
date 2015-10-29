@@ -58,6 +58,10 @@ int jsonltp(char* line, char* result, int flag){
 	//NER
 	vector<string> nes;
 	if (flag & JSONLTP_FLAG_NER) {
+		if (!(flag & JSONLTP_FLAG_TAG)) {
+			postagger_postag(eTag, words, tags);
+		}
+
 		ner_recognize(eNer, words, tags, nes);
 		cJSON_AddItemToObject(jRoot, "nes", strs_to_jary(nes));
 	}
@@ -65,6 +69,10 @@ int jsonltp(char* line, char* result, int flag){
 	//Parse
 	vector< pair< int, string > > parse;
 	if (flag & JSONLTP_FLAG_DP) {
+		if (!(flag & JSONLTP_FLAG_TAG)) {
+			postagger_postag(eTag, words, tags);
+		}
+
 		vector<int> heads;
 		vector<string> deprels;
 		parser_parse(eDp, words, tags, heads, deprels);
@@ -82,6 +90,21 @@ int jsonltp(char* line, char* result, int flag){
 
 	//SRL
 	if (flag & JSONLTP_FLAG_SRL) {
+		if (!(flag & JSONLTP_FLAG_TAG)) {
+			postagger_postag(eTag, words, tags);
+		}
+		if (!(flag & JSONLTP_FLAG_NER)) {
+			ner_recognize(eNer, words, tags, nes);
+		}
+		if (!(flag & JSONLTP_FLAG_DP)) {
+			vector<int> heads;
+			vector<string> deprels;
+			parser_parse(eDp, words, tags, heads, deprels);
+			for (int i = 0; i < heads.size(); i++) {
+				parse.push_back(make_pair(--heads[i], deprels[i]));
+			}
+		}
+
 		vector< pair< int, vector< pair<string, pair< int, int > > > > > srl;
 		DoSRL(words, tags, nes, parse, srl);
 		cJSON* jSRL = cJSON_CreateArray();
