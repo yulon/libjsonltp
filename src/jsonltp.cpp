@@ -131,7 +131,9 @@ int jsonltp(char* line, char* result, int flag){
 	char* jRootStr = cJSON_Print(jRoot);
 	cJSON_Delete(jRoot);
 	int jRootStrLen = strlen(jRootStr);
-	strcpy(result, jRootStr);
+	if (jRootStrLen <= strlen(result)) {
+		strcpy(result, jRootStr);
+	}
 	free(jRootStr);
 	return jRootStrLen;
 }
