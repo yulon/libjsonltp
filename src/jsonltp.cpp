@@ -11,13 +11,13 @@
 
 using namespace std;
 
-void* eCws;
+void* eWs;
 void* eTag;
 void* eNer;
 void* eDp;
 
 void jsonltp_init(char* dataDir){
-	eCws = segmentor_create_segmentor((const char*)((string)dataDir + (string)"/cws.model").c_str());
+	eWs = segmentor_create_segmentor((const char*)((string)dataDir + (string)"/cws.model").c_str());
 	eTag = postagger_create_postagger((const char*)((string)dataDir + (string)"/pos.model").c_str());
 	eNer = ner_create_recognizer((const char*)((string)dataDir + (string)"/ner.model").c_str());
 	eDp = parser_create_parser((const char*)((string)dataDir + (string)"/parser.model").c_str());
@@ -25,7 +25,7 @@ void jsonltp_init(char* dataDir){
 }
 
 void jsonltp_close(){
-	segmentor_release_segmentor(eCws);
+	segmentor_release_segmentor(eWs);
 	postagger_release_postagger(eTag);
 	ner_release_recognizer(eNer);
 	parser_release_parser(eDp);
@@ -43,12 +43,12 @@ cJSON* strs_to_jary(vector<string> &strs){
 int jsonltp(char* line, char* result, int flag){
 	cJSON* jRoot = cJSON_CreateObject();
 
-	//Segment
+	//Word Segmentation
 	vector<string> words;
-	int len = segmentor_segment(eCws, (const string)line, words);
+	int len = segmentor_segment(eWs, (const string)line, words);
 	cJSON_AddItemToObject(jRoot, "words", strs_to_jary(words));
 
-	//Postag
+	//Part-of-speech Tagging
 	vector<string> tags;
 	if (flag & JSONLTP_FLAG_TAG) {
 		postagger_postag(eTag, words, tags);
@@ -56,7 +56,7 @@ int jsonltp(char* line, char* result, int flag){
 		cJSON_AddItemToObject(jRoot, "tags", strs_to_jary(tags));
 	}
 
-	//NER
+	//Named Entity Recognition
 	vector<string> nes;
 	if (flag & JSONLTP_FLAG_NER) {
 		if (!(flag & JSONLTP_FLAG_TAG)) {
@@ -77,7 +77,7 @@ int jsonltp(char* line, char* result, int flag){
 		cJSON_AddItemToObject(jRoot, "nes", jNes);
 	}
 
-	//Parse
+	//Dependency Parsing
 	vector< pair< int, string > > parse;
 	if (flag & JSONLTP_FLAG_DP) {
 		if (!(flag & JSONLTP_FLAG_TAG)) {
@@ -100,7 +100,7 @@ int jsonltp(char* line, char* result, int flag){
 		cJSON_AddItemToObject(jRoot, "parse", jParses);
 	}
 
-	//SRL
+	//Semantic Role Labeling
 	if (flag & JSONLTP_FLAG_SRL) {
 		if (!(flag & JSONLTP_FLAG_TAG)) {
 			postagger_postag(eTag, words, tags);
