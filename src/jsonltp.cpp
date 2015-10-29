@@ -11,24 +11,24 @@
 
 using namespace std;
 
-void* cws;
-void* pos;
-void* ner;
-void* par;
+void* eCws;
+void* eTag;
+void* eNer;
+void* eDp;
 
 void jsonltp_init(char* dataDir){
-	cws = segmentor_create_segmentor((const char*)((string)dataDir + (string)"/cws.model").c_str());
-	pos = postagger_create_postagger((const char*)((string)dataDir + (string)"/pos.model").c_str());
-	ner = ner_create_recognizer((const char*)((string)dataDir + (string)"/ner.model").c_str());
-	par = parser_create_parser((const char*)((string)dataDir + (string)"/parser.model").c_str());
+	eCws = segmentor_create_segmentor((const char*)((string)dataDir + (string)"/cws.model").c_str());
+	eTag = postagger_create_postagger((const char*)((string)dataDir + (string)"/pos.model").c_str());
+	eNer = ner_create_recognizer((const char*)((string)dataDir + (string)"/ner.model").c_str());
+	eDp = parser_create_parser((const char*)((string)dataDir + (string)"/parser.model").c_str());
 	SRL_LoadResource((string)dataDir + (string)"/srl/");
 }
 
 void jsonltp_close(){
-	segmentor_release_segmentor(cws);
-	postagger_release_postagger(pos);
-	ner_release_recognizer(ner);
-	parser_release_parser(par);
+	segmentor_release_segmentor(eCws);
+	postagger_release_postagger(eTag);
+	ner_release_recognizer(eNer);
+	parser_release_parser(eDp);
 	SRL_ReleaseResource();
 }
 
@@ -45,20 +45,20 @@ int jsonltp(char* line, char* result, int flag){
 
 	//Segment
 	vector<string> words;
-	int len = segmentor_segment(cws, (const string)line, words);
+	int len = segmentor_segment(eCws, (const string)line, words);
 	cJSON_AddItemToObject(jRoot, "words", strs_to_jary(words));
 
 	//Postag
-	vector<string> postags;
+	vector<string> tags;
 	if (flag & JSONLTP_FLAG_TAG) {
-		postagger_postag(pos, words, postags);
-		cJSON_AddItemToObject(jRoot, "tags", strs_to_jary(postags));
+		postagger_postag(eTag, words, tags);
+		cJSON_AddItemToObject(jRoot, "tags", strs_to_jary(tags));
 	}
 
 	//NER
 	vector<string> nes;
 	if (flag & JSONLTP_FLAG_NER) {
-		ner_recognize(ner, words, postags, nes);
+		ner_recognize(eNer, words, tags, nes);
 		cJSON_AddItemToObject(jRoot, "nes", strs_to_jary(nes));
 	}
 
@@ -67,7 +67,7 @@ int jsonltp(char* line, char* result, int flag){
 	if (flag & JSONLTP_FLAG_DP) {
 		vector<int> heads;
 		vector<string> deprels;
-		parser_parse(par, words, postags, heads, deprels);
+		parser_parse(eDp, words, tags, heads, deprels);
 		cJSON* jParses = cJSON_CreateArray();
 		for (int i = 0; i < heads.size(); i++) {
 			parse.push_back(make_pair(--heads[i], deprels[i]));
@@ -83,7 +83,7 @@ int jsonltp(char* line, char* result, int flag){
 	//SRL
 	if (flag & JSONLTP_FLAG_SRL) {
 		vector< pair< int, vector< pair<string, pair< int, int > > > > > srl;
-		DoSRL(words, postags, nes, parse, srl);
+		DoSRL(words, tags, nes, parse, srl);
 		cJSON* jSRL = cJSON_CreateArray();
 		for (int i = 0; i < srl.size(); i++) {
 			cJSON* jPred = cJSON_CreateObject();
