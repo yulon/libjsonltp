@@ -24,7 +24,7 @@ void jsonltp_init(char* dataDir){
 	SRL_LoadResource((string)dataDir + (string)"/srl/");
 }
 
-void jsonltp_close(){
+void jsonltp_release(){
 	segmentor_release_segmentor(eWs);
 	postagger_release_postagger(eTag);
 	ner_release_recognizer(eNer);
@@ -40,7 +40,7 @@ cJSON* strs_to_jary(vector<string> &strs){
 	return jAry;
 }
 
-int jsonltp(char* line, char* result, int flag){
+char* jsonltp_analyze(char* line, int flag){
 	cJSON* jRoot = cJSON_CreateObject();
 
 	//Word Segmentation
@@ -143,10 +143,5 @@ int jsonltp(char* line, char* result, int flag){
 
 	char* jRootStr = cJSON_Print(jRoot);
 	cJSON_Delete(jRoot);
-	int jRootStrLen = strlen(jRootStr);
-	if (jRootStrLen <= strlen(result)) {
-		strcpy(result, jRootStr);
-	}
-	free(jRootStr);
-	return jRootStrLen;
+	return jRootStr;
 }
